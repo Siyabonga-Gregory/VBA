@@ -1,0 +1,114 @@
+
+Public Function CalcProRata(assetRate As Double, SDate As Date, EDate As Date) As Double
+'---Added by Siya 25/08/2016 for calculating prorata on lines
+
+        Dim totalNumOfDays As Integer      ' this variable will receive total number of days between start date and end date
+        Dim totalNumberOfMonths As Integer ' this variable will receive total number of month betwen start date and end date
+        Dim totalMonthlyFee As Double      ' this variable will receive total monthly fee value
+        Dim totalFee As Double             ' this variable will receive total fee value
+        Dim daysWithinMonths As Integer    ' this variable will receive total number of days within months
+        Dim dailyFee As Double             ' this variable will receive daily fee
+        
+        Dim lastDayOfTheMonth As Date      ' this variable will receive date as having the last day on the month in it.
+        
+        Dim sDaySum As Date                ' this variable will receive start date with the last day of the month
+        Dim eDaySum As Date                ' this variable will receive end date with the last day of the month
+        
+        Dim sDay As Integer                ' this variable will receive the last day of the month for start date
+        Dim eDay As Integer                ' this variable will receive the last day of the month for end date
+          
+        totalNumberOfDays = DateDiff("d", SDate, EDate)    ' getting the total number of day between "Start date and End Date"
+
+        totalNumberOfMonths = DateDiff("m", SDate, EDate) - 1 ' getting the total number of  months between "Start date and End date" and then minus one month
+           
+           
+           
+        lastDayOfTheMonth = DateSerial( _
+        Year(SDate), Month(SDate) + 1, 0)   ' assigning the last day of the month from start date
+ 
+         
+        sDaySum = lastDayOfTheMonth         ' assiging complete date having the last day of the month
+        sDay = Day(sDaySum)                 ' assiging only the last day of the month
+        sDay = sDay - Day(SDate) + 1        ' calculating the exat days used from the start month
+        
+             
+        lastDayOfTheMonth = DateSerial( _
+        Year(EDate), Month(EDate) + 1, 0)                ' assigning the last day of the month from end date
+
+        eDaySum = lastDayOfTheMonth                                           ' assigning complete date having the last day of the month
+      
+         If Year(SDate) = Year(EDate) And Month(SDate) = Month(EDate) Then     ' hire period is based on the same year and same month
+                          
+             daysWithinMonths = totalNumberOfDays
+             
+             eDay = 0                                                         ' calculating different between last day of the month and "Day" from end date
+             
+            totalNumberOfMonths = 1
+        Else
+              
+              daysWithinMonths = (totalNumberOfMonths / 12) * 365           ' hire period might be based on the same year but different month
+              eDay = Day(EDate)                                             ' calculating different between last day of the month and "Day" from end date
+         
+        End If
+        
+       ' eDay = Day(eDaySum)                                                ' calculating sum of used days for start date month and end date month
+       
+        daysWithinMonths = sDay + eDay                                      ' calculating sum for daysWithinMonths
+        
+       If (daysWithinMonths <= 31 And totalNumberOfMonths = 1) Then         ' meaning only one month period, then we need to resert daysWithinMonths to a zero value
+       
+        daysWithinMonths = 0                                                ' since we are working on a one month period, then we have to resert daysWithinMonths to a zero value as to avoid adding daily fee at this point
+        
+       End If
+    
+       If daysWithinMonths >= 30 And Year(SDate) <> Year(EDate) Then        ' meaning used days make up a complete month
+       
+            totalNumberOfMonths = totalNumberOfMonths + 1                   ' incrementing totalNumberOfMonth by 1
+            daysWithinMonths = daysWithinMonths - 30                        ' decrementing daysWithinMonths by 30 days
+            
+            'check to see are there more days that could make up a full month
+            If daysWithinMonths >= 30 Then
+            
+                 totalNumberOfMonths = totalNumberOfMonths + 1                   ' incrementing totalNumberOfMonth by 1
+                 daysWithinMonths = daysWithinMonths - 30                        ' decrementing daysWithinMonths by 30 days
+                 
+            End If
+              
+       ElseIf Month(SDate) = Month(EDate) And Year(SDate) = Year(EDate) Then
+       
+            daysWithinMonths = 0                                            ' Reserting total number of days within month to zero so that we won't calculate daily fee rate but will calculate monthly fee rate
+            
+       ElseIf (daysWithinMonths >= 30 And Year(SDate) = Year(EDate)) Then
+       
+        daysWithinMonths = 0
+        
+      End If
+         
+       If totalNumberOfMonths <= 12 Then                                   ' meaning hire period is for one year periods
+       
+         dailyFee = Round((assetRate * 12) / 365, 2)                       ' calculating daily fee for one year periods
+         
+       ElseIf totalNumberOfMonths > 12 And totalNumberOfMonths <= 24 Then  ' meaning hire period is for two years periods
+        
+             dailyFee = Round((assetRate * 24) / 730, 2)                   ' calculating daily fee for two years periods
+            
+       ElseIf totalNumberOfMonths > 24 And totalNumberOfMonths <= 36 Then  ' meaning hire period is for three years periods
+       
+            dailyFee = Round((assetRate * 36) / 1050, 2)                   ' calculating daily fee for three years period
+            
+    End If
+
+        totalFee = dailyFee * daysWithinMonths                             ' calculating total fee with no monthly fee added
+        totalMonthlyFee = totalNumberOfMonths * assetRate                  ' calculating total monthly fee
+        
+        If totalNumberOfMonths > 0 Then                                    ' meaning we have to add monthly fee to a total fee
+              
+              totalFee = totalMonthlyFee + (dailyFee * daysWithinMonths)   ' adding monthly fee to a total fee
+              
+        End If
+        
+    
+        'MsgBox "days  " & totalNumberOfDays & "    Months    " & totalNumberOfMonths & "   Entra Days     " & daysWithinMonths & "   dailyRateTotalFee    " & dailyFee & "      Total daily Cost     " & dailyFee * daysWithinMonths & "    Monthly Total Fee    " & totalMonthlyFee & "     Total Fee     " & totalFee
+        
+        
+        Calc
